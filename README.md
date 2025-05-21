@@ -64,10 +64,10 @@ Para executar os testes:
 
 ```bash
 # Testes unitários
-docker-compose exec api npm run test
+docker compose exec api npm run test
 
 # Testes com coverage
-docker-compose exec api npm run test:cov
+docker compose exec api npm run test:cov
 ```
 
 ## Campos da Campanha
