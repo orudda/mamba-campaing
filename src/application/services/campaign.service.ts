@@ -66,7 +66,7 @@ export class CampaignService {
     await this.campaignRepository.softDelete(id);
   }
 
-  private updateExpiredCampaigns(campaigns: Campaign[]): Campaign[] {
+  public async updateExpiredCampaigns(campaigns: Campaign[]): Promise<Campaign[]> {
     const now = new Date();
     return campaigns.map(campaign => {
       if (new Date(campaign.dataFim) < now && campaign.status !== CampaignStatus.EXPIRED) {
