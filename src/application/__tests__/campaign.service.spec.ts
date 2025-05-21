@@ -98,18 +98,33 @@ describe('CampaignService', () => {
 
   describe('findOne', () => {
     it('should return a campaign by id', async () => {
+      const now = new Date();
+      const dataInicio = new Date(now.getTime() + 60000);
+      const dataFim = new Date(now.getTime() + 120000);
+
       const campaign = {
         id: '1',
         nome: 'Campaign 1',
-        dataInicio: new Date(),
-        dataFim: new Date(),
+        dataInicio,
+        dataFim,
         status: CampaignStatus.ACTIVE,
         categoria: CampaignCategory.MARKETING,
       };
 
       mockRepository.findOne.mockResolvedValue(campaign);
+      mockRepository.save.mockResolvedValue({ ...campaign });
+
       const result = await service.findOne('1');
-      expect(result).toEqual(campaign);
+      
+      expect(mockRepository.findOne).toHaveBeenCalledWith({ where: { id: '1' } });
+      expect(result).toEqual({
+        id: '1',
+        nome: 'Campaign 1',
+        dataInicio,
+        dataFim,
+        status: CampaignStatus.ACTIVE,
+        categoria: CampaignCategory.MARKETING,
+      });
     });
 
     it('should throw NotFoundException if campaign not found', async () => {

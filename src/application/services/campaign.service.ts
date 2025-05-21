@@ -37,7 +37,8 @@ export class CampaignService {
     if (!campaign) {
       throw new NotFoundException(`Campanha com ID ${id} não encontrada`);
     }
-    return this.updateExpiredCampaigns([campaign])[0];
+    const [updatedCampaign] = await this.updateExpiredCampaigns([campaign]);
+    return updatedCampaign;
   }
 
   async update(id: string, updateCampaignDto: UpdateCampaignDto): Promise<Campaign> {
@@ -68,12 +69,13 @@ export class CampaignService {
 
   public async updateExpiredCampaigns(campaigns: Campaign[]): Promise<Campaign[]> {
     const now = new Date();
-    return campaigns.map(campaign => {
+    const updatedCampaigns = campaigns.map(campaign => {
       if (new Date(campaign.dataFim) < now && campaign.status !== CampaignStatus.EXPIRED) {
         campaign.status = CampaignStatus.EXPIRED;
-        this.campaignRepository.save(campaign);
+        return this.campaignRepository.save(campaign);
       }
       return campaign;
     });
+    return Promise.all(updatedCampaigns);
   }
 } 
