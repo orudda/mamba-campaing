@@ -19,10 +19,17 @@ export class CampaignController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar todas as campanhas' })
+  @ApiOperation({ summary: 'Listar todas as campanhas ativas' })
   @ApiResponse({ status: 200, description: 'Lista de campanhas retornada com sucesso', type: [Campaign] })
   findAll(): Promise<Campaign[]> {
     return this.campaignService.findAll();
+  }
+
+  @Get('all')
+  @ApiOperation({ summary: 'Listar todas as campanhas (incluindo deletadas)' })
+  @ApiResponse({ status: 200, description: 'Lista completa de campanhas retornada com sucesso', type: [Campaign] })
+  findAllWithDeleted(): Promise<Campaign[]> {
+    return this.campaignService.findAllWithDeleted();
   }
 
   @Get(':id')

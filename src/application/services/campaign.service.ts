@@ -32,6 +32,13 @@ export class CampaignService {
     return this.updateExpiredCampaigns(campaigns);
   }
 
+  async findAllWithDeleted(): Promise<Campaign[]> {
+    const campaigns = await this.campaignRepository.find({
+      withDeleted: true,
+    });
+    return this.updateExpiredCampaigns(campaigns);
+  }
+
   async findOne(id: string): Promise<Campaign> {
     const campaign = await this.campaignRepository.findOne({ where: { id } });
     if (!campaign) {
