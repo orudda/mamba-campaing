@@ -4,18 +4,26 @@ import { CampaignService } from '../../application/services/campaign.service';
 import { CreateCampaignDto } from '../../domain/dto/create-campaign.dto';
 import { UpdateCampaignDto } from '../../domain/dto/update-campaign.dto';
 import { Campaign } from '../../domain/entities/campaign.entity';
+import { CampaignQueueService } from '../../application/queues/campaign.queue.service';
 
 @ApiTags('Campanhas')
 @Controller('campaigns')
 export class CampaignController {
-  constructor(private readonly campaignService: CampaignService) {}
+  constructor(
+    private readonly campaignService: CampaignService,
+    private readonly campaignQueueService: CampaignQueueService,
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Criar uma nova campanha' })
-  @ApiResponse({ status: 201, description: 'Campanha criada com sucesso', type: Campaign })
+  @ApiResponse({ status: 202, description: 'Campanha enviada para processamento' })
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
-  create(@Body() createCampaignDto: CreateCampaignDto): Promise<Campaign> {
-    return this.campaignService.create(createCampaignDto);
+  async create(@Body() createCampaignDto: CreateCampaignDto) {
+    const job = await this.campaignQueueService.addCreateCampaignJob(createCampaignDto);
+    return {
+      message: 'Campanha enviada para processamento',
+      jobId: job.id
+    };
   }
 
   @Get()

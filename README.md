@@ -1,6 +1,6 @@
 # Sistema de Gerenciamento de Campanhas
 
-API RESTful para gerenciamento de campanhas desenvolvida com NestJS, SQLite.
+API RESTful para gerenciamento de campanhas desenvolvida com NestJS, SQLite e Redis.
 
 ## Funcionalidades
 
@@ -12,6 +12,10 @@ API RESTful para gerenciamento de campanhas desenvolvida com NestJS, SQLite.
 - Atualização automática de status para campanhas expiradas
   - Verificação automática a cada minuto
   - Atualização em tempo real do status
+- Sistema de filas com Redis
+  - Processamento assíncrono de criação de campanhas
+  - Retry automático em caso de falhas
+  - Backoff exponencial
 - Documentação Swagger
 - Testes unitários
 
@@ -51,13 +55,19 @@ O projeto segue uma arquitetura em camadas (n-layer):
   - `services/`: Serviços que implementam as regras de negócio
     - `campaign.service.ts`: Gerenciamento de campanhas
     - `campaign-scheduler.service.ts`: Agendamento de tarefas automáticas
+  - `queues/`: Serviços de fila para processamento assíncrono
+    - `campaign.queue.module.ts`: Configuração do módulo de fila
+    - `campaign.queue.service.ts`: Serviço para adicionar jobs à fila
+    - `campaign.queue.processor.ts`: Processador dos jobs da fila
 
 - `presentation/`: Contém os controllers e a interface da API
   - `controllers/`: Controllers que gerenciam as rotas e requisições HTTP
 
 ## Endpoints da API
 
-- `POST /campaigns`: Criar uma nova campanha
+- `POST /campaigns`: Criar uma nova campanha (processamento assíncrono)
+  - Retorna um job ID para acompanhamento
+  - Status 202 (Accepted) indica que a requisição foi aceita para processamento
 - `GET /campaigns`: Listar todas as campanhas ativas
 - `GET /campaigns/all`: Listar todas as campanhas (incluindo deletadas)
 - `GET /campaigns/:id`: Buscar uma campanha específica
@@ -101,3 +111,13 @@ docker compose exec api npm run test:cov
 - Campanhas deletadas podem ser visualizadas através do endpoint `/campaigns/all`
 - O endpoint padrão `/campaigns` mostra apenas campanhas ativas (não deletadas)
 - A data de deleção é registrada automaticamente no campo `deletedAt`
+
+## Sistema de Filas
+
+O sistema utiliza Redis com Bull para processamento assíncrono de campanhas:
+
+- Criação de campanhas é processada em background
+- Configuração de retry automático (3 tentativas)
+- Backoff exponencial entre tentativas (começa com 1 segundo)
+- Jobs podem ser monitorados através do ID retornado na criação
+- Redis persiste os jobs mesmo em caso de reinicialização do sistema
