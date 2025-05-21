@@ -1,12 +1,14 @@
 # Sistema de Gerenciamento de Campanhas
 
-API RESTful para gerenciamento de campanhas desenvolvida com NestJS, SQLite e Docker.
+API RESTful para gerenciamento de campanhas desenvolvida com NestJS, SQLite.
 
 ## Funcionalidades
 
 - CRUD completo de campanhas
 - Validações de datas
 - Soft delete
+  - Possibilidade de listar campanhas deletadas
+  - Rastreamento da data de deleção
 - Atualização automática de status para campanhas expiradas
   - Verificação automática a cada minuto
   - Atualização em tempo real do status
@@ -28,7 +30,10 @@ cd mamba-campaign
 
 2. Inicie a aplicação com Docker Compose:
 ```bash
-docker-compose up
+docker compose build
+```
+```bash
+docker compose up
 ```
 
 A API estará disponível em `http://localhost:3000`
@@ -53,7 +58,8 @@ O projeto segue uma arquitetura em camadas (n-layer):
 ## Endpoints da API
 
 - `POST /campaigns`: Criar uma nova campanha
-- `GET /campaigns`: Listar todas as campanhas
+- `GET /campaigns`: Listar todas as campanhas ativas
+- `GET /campaigns/all`: Listar todas as campanhas (incluindo deletadas)
 - `GET /campaigns/:id`: Buscar uma campanha específica
 - `PATCH /campaigns/:id`: Atualizar uma campanha
 - `DELETE /campaigns/:id`: Remover uma campanha (soft delete)
@@ -79,6 +85,7 @@ docker compose exec api npm run test:cov
 - `dataFim`: Data de fim
 - `status`: Status da campanha (ativa, pausada ou expirada)
 - `categoria`: Categoria da campanha
+- `deletedAt`: Data de deleção (apenas para campanhas deletadas)
 
 ## Validações
 
@@ -87,3 +94,10 @@ docker compose exec api npm run test:cov
 - Campanhas são marcadas automaticamente como expiradas quando a data final é ultrapassada
   - Verificação automática ocorre a cada minuto
   - Status é atualizado sem necessidade de intervenção manual
+
+## Gerenciamento de Campanhas Deletadas
+
+- O sistema utiliza soft delete para manter o histórico de campanhas
+- Campanhas deletadas podem ser visualizadas através do endpoint `/campaigns/all`
+- O endpoint padrão `/campaigns` mostra apenas campanhas ativas (não deletadas)
+- A data de deleção é registrada automaticamente no campo `deletedAt`
