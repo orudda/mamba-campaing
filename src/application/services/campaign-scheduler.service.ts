@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan } from 'typeorm';
-import { Campaign } from '../../domain/entities/campaign.entity';
+import { Campaign, CampaignStatus } from '../../domain/entities/campaign.entity';
 import { CampaignService } from './campaign.service';
 
 @Injectable()
@@ -22,7 +22,8 @@ export class CampaignSchedulerService {
     const now = new Date();
     const campaigns = await this.campaignRepository.find({
       where: {
-        dataFim: LessThan(now)
+        dataFim: LessThan(now),
+        status: CampaignStatus.ACTIVE
       }
     });
 
