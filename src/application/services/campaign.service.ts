@@ -15,12 +15,10 @@ export class CampaignService {
   async create(createCampaignDto: CreateCampaignDto): Promise<Campaign> {
     const { dataInicio, dataFim } = createCampaignDto;
 
-    // Validar se a data de início é posterior à data atual
     if (new Date(dataInicio) < new Date()) {
       throw new BadRequestException('A data de início deve ser igual ou posterior à data atual');
     }
 
-    // Validar se a data fim é posterior à data início
     if (new Date(dataFim) <= new Date(dataInicio)) {
       throw new BadRequestException('A data fim deve ser posterior à data início');
     }
@@ -46,17 +44,14 @@ export class CampaignService {
     const campaign = await this.findOne(id);
 
     if (updateCampaignDto.dataInicio && updateCampaignDto.dataFim) {
-      // Validar se a data fim é posterior à data início
       if (new Date(updateCampaignDto.dataFim) <= new Date(updateCampaignDto.dataInicio)) {
         throw new BadRequestException('A data fim deve ser posterior à data início');
       }
     } else if (updateCampaignDto.dataInicio && !updateCampaignDto.dataFim) {
-      // Validar com a data fim existente
       if (new Date(campaign.dataFim) <= new Date(updateCampaignDto.dataInicio)) {
         throw new BadRequestException('A data fim deve ser posterior à data início');
       }
     } else if (!updateCampaignDto.dataInicio && updateCampaignDto.dataFim) {
-      // Validar com a data início existente
       if (new Date(updateCampaignDto.dataFim) <= new Date(campaign.dataInicio)) {
         throw new BadRequestException('A data fim deve ser posterior à data início');
       }
